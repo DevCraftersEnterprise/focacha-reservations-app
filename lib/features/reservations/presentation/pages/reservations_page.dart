@@ -5,10 +5,29 @@ class ReservationsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Reservaciones')),
-      body: const SafeArea(
-        child: Center(child: Text('Módulo base de reservaciones')),
+    return SafeArea(
+      child: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Reservaciones',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text('Aquí mostraremos el listado y formulario móvil.'),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

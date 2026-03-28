@@ -5,7 +5,7 @@ import '../core/constants/app_strings.dart';
 import '../core/theme/app_theme.dart';
 import '../features/auth/presentation/pages/login_page.dart';
 import '../features/auth/presentation/providers/auth_provider.dart';
-import '../features/dashboard/presentation/pages/dashboard_page.dart';
+import 'shell/authenticated_shell.dart';
 // import 'router/app_router.dart';
 
 class ReservationApp extends ConsumerWidget {
@@ -26,7 +26,7 @@ class ReservationApp extends ConsumerWidget {
             return const LoginPage();
           }
 
-          return const DashboardPage();
+          return const AuthenticatedShell();
         },
         loading: () {
           return const _AppBootLoader();

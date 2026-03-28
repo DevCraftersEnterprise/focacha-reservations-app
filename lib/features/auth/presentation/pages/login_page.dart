@@ -55,7 +55,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       setState(() {
         _errorMessage = authService.extractErrorMessage(
           error,
-          fallback: 'No se pudo iniciar sesión.',
+          fallback: 'No se pudo iniciar sesión',
         );
       });
     }

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/constants/app_colors.dart';
 import '../../features/dashboard/presentation/pages/dashboard_page.dart';
+import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/reservations/presentation/pages/reservations_page.dart';
 
 class AuthenticatedShell extends ConsumerStatefulWidget {
@@ -18,7 +19,7 @@ class _AuthenticatedShellState extends ConsumerState<AuthenticatedShell> {
   final List<Widget> _pages = const [
     DashboardPage(),
     ReservationsPage(),
-    // ProfilePage(),
+    ProfilePage(),
   ];
 
   final List<String> _titles = const ['Dashboard', 'Reservaciones', 'Perfil'];
