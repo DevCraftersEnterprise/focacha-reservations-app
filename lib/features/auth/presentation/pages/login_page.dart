@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
-import '../../../dashboard/presentation/pages/dashboard_page.dart';
 import '../providers/auth_provider.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
@@ -51,12 +50,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       await notifier.login(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
-      );
-
-      if (!mounted) return;
-
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const DashboardPage()),
       );
     } catch (error) {
       setState(() {

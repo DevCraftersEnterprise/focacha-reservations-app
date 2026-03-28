@@ -27,8 +27,12 @@ class ReservationApp extends ConsumerWidget {
 
           return const DashboardPage();
         },
-        loading: () => _AppBootLoader(),
-        error: (_, _) => const LoginPage(),
+        loading: () {
+          return const _AppBootLoader();
+        },
+        error: (error, stack) {
+          return const LoginPage();
+        },
       ),
     );
   }

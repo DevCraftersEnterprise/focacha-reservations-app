@@ -45,7 +45,7 @@ class AuthUserModel {
       email: map['email'] as String,
       role: map['role'] as String,
       branchId: map['branchId'] as String?,
-      branch: map['branch'] != null
+      branch: map['branch'] != null && (map['branch'] as Map).containsKey('id')
           ? AuthUserBranchModel.fromMap(map['branch'] as Map<String, dynamic>)
           : null,
     );
