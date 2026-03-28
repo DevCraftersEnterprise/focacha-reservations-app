@@ -9,15 +9,15 @@ class ReservationsService {
 
   Future<List<ReservationModel>> findAll({
     String? branchId,
-    String? reservationTime,
+    String? reservationDate,
     String? status,
   }) async {
     final response = await _client.dio.get(
       '/reservations',
       queryParameters: {
         if (branchId != null && branchId.isNotEmpty) 'branchId': branchId,
-        if (reservationTime != null && reservationTime.isNotEmpty)
-          'reservationTime': reservationTime,
+        if (reservationDate != null && reservationDate.isNotEmpty)
+          'reservationDate': reservationDate,
         if (status != null && status.isNotEmpty) 'status': status,
       },
     );
