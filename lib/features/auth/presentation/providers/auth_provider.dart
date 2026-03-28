@@ -36,9 +36,7 @@ class AuthNotifier extends AsyncNotifier<AuthSession?> {
     final token = await storage.getToken();
     final userJson = await storage.getUser();
 
-    if (token == null || userJson == null) {
-      return null;
-    }
+    if (token == null || userJson == null) return null;
 
     try {
       final remoteUser = await authService.me();
@@ -46,7 +44,7 @@ class AuthNotifier extends AsyncNotifier<AuthSession?> {
       await storage.saveUser(remoteUser.toJson());
 
       return AuthSession(token: token, user: remoteUser);
-    } catch (_) {
+    } catch (e) {
       await storage.clearSession();
       return null;
     }
@@ -58,7 +56,7 @@ class AuthNotifier extends AsyncNotifier<AuthSession?> {
     final storage = ref.read(secureStorageProvider);
     final authService = ref.read(authServiceProvider);
 
-    state = await AsyncValue.guard(() async {
+    try {
       final response = await authService.login(
         email: email,
         password: password,
@@ -67,8 +65,15 @@ class AuthNotifier extends AsyncNotifier<AuthSession?> {
       await storage.saveToken(response.accessToken);
       await storage.saveUser(response.user.toJson());
 
-      return AuthSession(token: response.accessToken, user: response.user);
-    });
+      final session = AuthSession(
+        token: response.accessToken,
+        user: response.user,
+      );
+
+      state = AsyncData(session);
+    } catch (e, stack) {
+      state = AsyncError(e, stack);
+    }
   }
 
   Future<void> logout() async {

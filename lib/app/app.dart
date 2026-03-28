@@ -16,6 +16,7 @@ class ReservationApp extends ConsumerWidget {
     final authState = ref.watch(authProvider);
 
     return MaterialApp(
+      key: ValueKey(authState.value?.user.id ?? 'no-session'),
       title: AppStrings.appName,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,

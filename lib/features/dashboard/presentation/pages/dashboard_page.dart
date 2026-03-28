@@ -54,6 +54,11 @@ class DashboardPage extends ConsumerWidget {
                             ?.copyWith(fontWeight: FontWeight.w700),
                       ),
                       const SizedBox(height: 10),
+                      Text(
+                        'Rol: ${session?.user.role ?? '-'}',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                      const SizedBox(height: 4),
                     ],
                   ),
                 ),
