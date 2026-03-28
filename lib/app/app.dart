@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../core/constants/app_strings.dart';
 import '../core/theme/app_theme.dart';
+import 'router/app_router.dart';
 
 class ReservationApp extends StatelessWidget {
   const ReservationApp({super.key});
@@ -12,6 +13,7 @@ class ReservationApp extends StatelessWidget {
       title: AppStrings.appName,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
+      routerConfig: appRouter,
     );
   }
 }
