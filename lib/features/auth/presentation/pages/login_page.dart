@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
+import '../../../../core/utils/extract_error_message_util.dart';
 import '../providers/auth_provider.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
@@ -44,7 +45,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     });
 
     final notifier = ref.read(authProvider.notifier);
-    final authService = ref.read(authServiceProvider);
 
     try {
       await notifier.login(
@@ -53,7 +53,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       );
     } catch (error) {
       setState(() {
-        _errorMessage = authService.extractErrorMessage(
+        _errorMessage = extractErrorMessage(
           error,
           fallback: 'No se pudo iniciar sesión',
         );

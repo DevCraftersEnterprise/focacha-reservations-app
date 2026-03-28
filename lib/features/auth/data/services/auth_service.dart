@@ -1,5 +1,3 @@
-import 'package:dio/dio.dart';
-
 import '../../../../core/network/dio_client.dart';
 import '../models/auth_user_model.dart';
 
@@ -23,28 +21,5 @@ class AuthService {
   Future<AuthUserModel> me() async {
     final response = await _client.dio.get('/auth/me');
     return AuthUserModel.fromMap(response.data as Map<String, dynamic>);
-  }
-
-  String extractErrorMessage(
-    Object error, {
-    String fallback = 'Ocurrió un error',
-  }) {
-    if (error is DioException) {
-      final data = error.response?.data;
-
-      if (data is Map<String, dynamic>) {
-        final message = data['message'];
-
-        if (message is String && message.trim().isNotEmpty) {
-          return message;
-        }
-
-        if (message is List) {
-          return message.join(', ');
-        }
-      }
-    }
-
-    return fallback;
   }
 }
