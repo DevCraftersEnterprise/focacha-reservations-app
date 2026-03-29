@@ -2,13 +2,49 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../data/models/branch_model.dart';
 import '../../data/models/reservation_model.dart';
 import '../../data/models/zone_model.dart';
+import '../../data/service/branches_service.dart';
 import '../../data/service/reservations_service.dart';
 
 final reservationsServiceProvider = Provider<ReservationsService>((ref) {
   final client = ref.read(dioClientProvider);
   return ReservationsService(client);
+});
+
+final branchesServiceProvider = Provider<BranchesService>((ref) {
+  final client = ref.read(dioClientProvider);
+  return BranchesService(client);
+});
+
+final branchesProvider = FutureProvider<List<BranchModel>>((ref) async {
+  final session = ref.read(authProvider).value;
+
+  if (session?.isCashier == true) {
+    final user = session!.user;
+    final branchId = user.branchId;
+    final branchName = user.branch?.name;
+
+    if (branchId != null && branchName != null) {
+      return [
+        BranchModel(
+          id: branchId,
+          name: branchName,
+          address: '',
+          phone: null,
+          isActive: true,
+        ),
+      ];
+    }
+
+    return [];
+  }
+
+  final service = ref.read(branchesServiceProvider);
+  final branches = await service.findAll();
+
+  return branches.where((branch) => branch.isActive).toList();
 });
 
 class ReservationFilters {
