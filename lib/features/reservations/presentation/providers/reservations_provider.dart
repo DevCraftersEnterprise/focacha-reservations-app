@@ -18,16 +18,34 @@ class ReservationFilters {
   const ReservationFilters({this.branchId, this.reservationDate, this.status});
 }
 
-final reservationFiltersProvider = Provider<ReservationFilters>((ref) {
-  final session = ref.watch(authProvider).value;
-  final branchId = session?.isCashier == true ? session?.user.branchId : null;
+class ReservationFiltersNotifier extends Notifier<ReservationFilters> {
+  @override
+  ReservationFilters build() {
+    final session = ref.watch(authProvider).value;
+    final branchId = session?.isCashier == true ? session?.user.branchId : null;
+    return ReservationFilters(branchId: branchId);
+  }
 
-  return ReservationFilters(branchId: branchId);
-});
+  void updateFilters(ReservationFilters newFilters) {
+    state = newFilters;
+  }
+
+  void reset() {
+    final session = ref.read(authProvider).value;
+    final branchId = session?.isCashier == true ? session?.user.branchId : null;
+    state = ReservationFilters(branchId: branchId);
+  }
+}
+
+final reservationFiltersProvider =
+    NotifierProvider<ReservationFiltersNotifier, ReservationFilters>(
+      ReservationFiltersNotifier.new,
+    );
 
 class ReservationsNotifier extends AsyncNotifier<List<ReservationModel>> {
   @override
   Future<List<ReservationModel>> build() async {
+    ref.watch(reservationFiltersProvider);
     return _load();
   }
 
@@ -44,7 +62,7 @@ class ReservationsNotifier extends AsyncNotifier<List<ReservationModel>> {
 
   Future<void> refreshData() async {
     state = const AsyncLoading();
-    state = await AsyncValue.guard(_load);
+    state = await AsyncValue.guard(() => _load());
   }
 
   Future<void> create({
