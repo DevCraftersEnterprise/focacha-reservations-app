@@ -12,20 +12,24 @@ class ReservationsService {
     String? reservationDate,
     String? status,
   }) async {
+    final params = {
+      if (branchId != null && branchId.isNotEmpty) 'branchId': branchId,
+      if (reservationDate != null && reservationDate.isNotEmpty)
+        'reservationDate': reservationDate,
+      if (status != null && status.isNotEmpty) 'status': status,
+    };
+
     final response = await _client.dio.get(
       '/reservations',
-      queryParameters: {
-        if (branchId != null && branchId.isNotEmpty) 'branchId': branchId,
-        if (reservationDate != null && reservationDate.isNotEmpty)
-          'reservationDate': reservationDate,
-        if (status != null && status.isNotEmpty) 'status': status,
-      },
+      queryParameters: params,
     );
 
     final data = response.data as List<dynamic>;
-    return data
+    final results = data
         .map((item) => ReservationModel.fromMap(item as Map<String, dynamic>))
         .toList();
+
+    return results;
   }
 
   Future<ReservationModel> create({

@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../data/models/reservation_model.dart';
@@ -23,7 +24,8 @@ class ReservationFiltersNotifier extends Notifier<ReservationFilters> {
   ReservationFilters build() {
     final session = ref.watch(authProvider).value;
     final branchId = session?.isCashier == true ? session?.user.branchId : null;
-    return ReservationFilters(branchId: branchId);
+    final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    return ReservationFilters(branchId: branchId, reservationDate: today);
   }
 
   void updateFilters(ReservationFilters newFilters) {
@@ -33,7 +35,8 @@ class ReservationFiltersNotifier extends Notifier<ReservationFilters> {
   void reset() {
     final session = ref.read(authProvider).value;
     final branchId = session?.isCashier == true ? session?.user.branchId : null;
-    state = ReservationFilters(branchId: branchId);
+    final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    state = ReservationFilters(branchId: branchId, reservationDate: today);
   }
 }
 
@@ -53,11 +56,13 @@ class ReservationsNotifier extends AsyncNotifier<List<ReservationModel>> {
     final filters = ref.read(reservationFiltersProvider);
     final service = ref.read(reservationsServiceProvider);
 
-    return service.findAll(
+    final results = await service.findAll(
       branchId: filters.branchId,
       reservationDate: filters.reservationDate,
       status: filters.status,
     );
+
+    return results;
   }
 
   Future<void> refreshData() async {

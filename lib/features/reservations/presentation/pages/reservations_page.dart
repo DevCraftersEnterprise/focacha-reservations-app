@@ -168,6 +168,7 @@ class _FiltersCard extends StatelessWidget {
         child: Column(
           children: [
             DropdownButtonFormField<String>(
+              key: ValueKey('status_${currentStatus ?? 'all'}'),
               initialValue: currentStatus,
               decoration: const InputDecoration(label: Text('Estado')),
               items: [
@@ -179,6 +180,7 @@ class _FiltersCard extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             TextFormField(
+              key: ValueKey('date_${currentDate ?? 'none'}'),
               initialValue: currentDate ?? '',
               readOnly: true,
               decoration: const InputDecoration(

@@ -70,8 +70,8 @@ class ReservationModel {
       eventType: map['eventType'] as String,
       customerName: map['customerName'] as String,
       phonePrimary: map['phonePrimary'] as String,
-      phoneSecondary: map['phoneSecondary'] as String,
-      notes: map['notes'] as String,
+      phoneSecondary: map['phoneSecondary'] as String?,
+      notes: map['notes'] as String?,
       status: map['status'] as String,
       branch: map['branch'] != null && (map['branch'] as Map).containsKey('id')
           ? ReservationBranchModel.fromMap(
