@@ -85,7 +85,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.primary.withOpacity(0.18),
+                          color: AppColors.primary.withValues(alpha: 0.18),
                           blurRadius: 18,
                           offset: const Offset(0, 8),
                         ),
@@ -141,8 +141,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                               validator: (value) {
                                 final text = value?.trim() ?? '';
                                 if (text.isEmpty) return 'Ingresa tu correo';
-                                if (!text.contains('@'))
+                                if (!text.contains('@')) {
                                   return 'Correo inválido';
+                                }
                                 return null;
                               },
                             ),
@@ -172,10 +173,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                               ),
                               validator: (value) {
                                 final text = value?.trim() ?? '';
-                                if (text.isEmpty)
+                                if (text.isEmpty) {
                                   return 'Ingresa tu contraseña';
-                                if (text.length < 6)
+                                }
+                                if (text.length < 6) {
                                   return 'Mínimo 6 caracteres';
+                                }
                                 return null;
                               },
                             ),
