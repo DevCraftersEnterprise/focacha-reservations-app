@@ -67,6 +67,27 @@ abstract final class AppTheme {
           textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
         ),
       ),
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: Colors.white,
+        indicatorColor: AppColors.primary.withValues(alpha: 0.12),
+        labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          final selected = states.contains(WidgetState.selected);
+
+          return TextStyle(
+            color: selected ? AppColors.primary : AppColors.textSecondary,
+            fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+            fontSize: 12,
+          );
+        }),
+        iconTheme: WidgetStateProperty.resolveWith((states) {
+          final selected = states.contains(WidgetState.selected);
+
+          return IconThemeData(
+            color: selected ? AppColors.primary : AppColors.textSecondary,
+            size: 22,
+          );
+        }),
+      ),
     );
   }
 }
