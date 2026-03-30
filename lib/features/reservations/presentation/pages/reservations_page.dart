@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:animate_do/animate_do.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/utils/date_formatter.dart';
@@ -56,60 +57,69 @@ class ReservationsPage extends ConsumerWidget {
                   physics: const AlwaysScrollableScrollPhysics(),
                   slivers: [
                     SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 10),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                'Reservaciones',
-                                style: Theme.of(context).textTheme.headlineSmall
-                                    ?.copyWith(fontWeight: FontWeight.w800),
+                      child: FadeInDown(
+                        duration: const Duration(milliseconds: 400),
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 16, 16, 10),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  'Reservaciones',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headlineSmall
+                                      ?.copyWith(fontWeight: FontWeight.w800),
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
                     SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: _FiltersCard(
-                          currentStatus: filters.status,
-                          currentDate: filters.reservationDate,
-                          onStatusChanged: (value) {
-                            ref
-                                .read(
-                                  reservationFiltersNotifierProvider.notifier,
-                                )
-                                .updateFilters(
-                                  ReservationFilters(
-                                    branchId: filters.branchId,
-                                    reservationDate: filters.reservationDate,
-                                    status: value,
-                                  ),
-                                );
-                          },
-                          onDateChanged: (value) {
-                            ref
-                                .read(
-                                  reservationFiltersNotifierProvider.notifier,
-                                )
-                                .updateFilters(
-                                  ReservationFilters(
-                                    branchId: filters.branchId,
-                                    reservationDate: value,
-                                    status: filters.status,
-                                  ),
-                                );
-                          },
-                          onClear: () {
-                            ref
-                                .read(
-                                  reservationFiltersNotifierProvider.notifier,
-                                )
-                                .reset();
-                          },
+                      child: FadeIn(
+                        duration: const Duration(milliseconds: 500),
+                        delay: const Duration(milliseconds: 100),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: _FiltersCard(
+                            currentStatus: filters.status,
+                            currentDate: filters.reservationDate,
+                            onStatusChanged: (value) {
+                              ref
+                                  .read(
+                                    reservationFiltersNotifierProvider.notifier,
+                                  )
+                                  .updateFilters(
+                                    ReservationFilters(
+                                      branchId: filters.branchId,
+                                      reservationDate: filters.reservationDate,
+                                      status: value,
+                                    ),
+                                  );
+                            },
+                            onDateChanged: (value) {
+                              ref
+                                  .read(
+                                    reservationFiltersNotifierProvider.notifier,
+                                  )
+                                  .updateFilters(
+                                    ReservationFilters(
+                                      branchId: filters.branchId,
+                                      reservationDate: value,
+                                      status: filters.status,
+                                    ),
+                                  );
+                            },
+                            onClear: () {
+                              ref
+                                  .read(
+                                    reservationFiltersNotifierProvider.notifier,
+                                  )
+                                  .reset();
+                            },
+                          ),
                         ),
                       ),
                     ),
@@ -135,35 +145,40 @@ class ReservationsPage extends ConsumerWidget {
                             index,
                           ) {
                             final reservation = items[index];
-                            return Padding(
-                              padding: EdgeInsets.only(
-                                bottom: index < items.length - 1 ? 12 : 0,
-                              ),
-                              child: _ReservationCard(
-                                reservation: reservation,
-                                onEdit: reservation.status == 'ACTIVE'
-                                    ? () async {
-                                        await showModalBottomSheet<void>(
-                                          context: context,
-                                          isScrollControlled: true,
-                                          backgroundColor: Colors.transparent,
-                                          builder: (_) => ReservationFormSheet(
-                                            reservation: reservation,
-                                          ),
-                                        );
-                                      }
-                                    : null,
-                                onCancel: reservation.status == 'ACTIVE'
-                                    ? () async {
-                                        await showDialog<void>(
-                                          context: context,
-                                          builder: (_) =>
-                                              CancelReservationDialog(
-                                                reservation: reservation,
-                                              ),
-                                        );
-                                      }
-                                    : null,
+                            return FadeInUp(
+                              duration: const Duration(milliseconds: 400),
+                              delay: Duration(milliseconds: 50 * index),
+                              child: Padding(
+                                padding: EdgeInsets.only(
+                                  bottom: index < items.length - 1 ? 12 : 0,
+                                ),
+                                child: _ReservationCard(
+                                  reservation: reservation,
+                                  onEdit: reservation.status == 'ACTIVE'
+                                      ? () async {
+                                          await showModalBottomSheet<void>(
+                                            context: context,
+                                            isScrollControlled: true,
+                                            backgroundColor: Colors.transparent,
+                                            builder: (_) =>
+                                                ReservationFormSheet(
+                                                  reservation: reservation,
+                                                ),
+                                          );
+                                        }
+                                      : null,
+                                  onCancel: reservation.status == 'ACTIVE'
+                                      ? () async {
+                                          await showDialog<void>(
+                                            context: context,
+                                            builder: (_) =>
+                                                CancelReservationDialog(
+                                                  reservation: reservation,
+                                                ),
+                                          );
+                                        }
+                                      : null,
+                                ),
                               ),
                             );
                           }, childCount: items.length),

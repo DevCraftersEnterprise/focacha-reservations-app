@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:animate_do/animate_do.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/utils/date_formatter.dart';
@@ -43,43 +44,46 @@ class DashboardPage extends ConsumerWidget {
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
               children: [
-                BaseCard(
-                  padding: const EdgeInsets.all(20),
-                  borderRadius: 28,
-                  elevation: 1,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Bienvenido(a)',
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(color: AppColors.textSecondary),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        '${user?.firstName ?? ''} ${user?.lastName ?? ''}',
-                        style: Theme.of(context).textTheme.headlineSmall
-                            ?.copyWith(
-                              fontWeight: FontWeight.w800,
-                              color: AppColors.textPrimary,
+                FadeInDown(
+                  duration: const Duration(milliseconds: 500),
+                  child: BaseCard(
+                    padding: const EdgeInsets.all(20),
+                    borderRadius: 28,
+                    elevation: 1,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Bienvenido(a)',
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(color: AppColors.textSecondary),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          '${user?.firstName ?? ''} ${user?.lastName ?? ''}',
+                          style: Theme.of(context).textTheme.headlineSmall
+                              ?.copyWith(
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.textPrimary,
+                              ),
+                        ),
+                        const SizedBox(height: 12),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            IconBadge(
+                              icon: Icons.verified_user_outlined,
+                              label: user?.role ?? '-',
                             ),
-                      ),
-                      const SizedBox(height: 12),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
-                          IconBadge(
-                            icon: Icons.verified_user_outlined,
-                            label: user?.role ?? '-',
-                          ),
-                          IconBadge(
-                            icon: Icons.storefront_outlined,
-                            label: user?.branch?.name ?? 'Administrador',
-                          ),
-                        ],
-                      ),
-                    ],
+                            IconBadge(
+                              icon: Icons.storefront_outlined,
+                              label: user?.branch?.name ?? 'Administrador',
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
 
@@ -316,10 +320,16 @@ class DashboardPage extends ConsumerWidget {
                               icon: Icons.event_busy_outlined,
                             )
                           else
-                            ...detail.items.map(
-                              (item) => Padding(
-                                padding: const EdgeInsets.only(bottom: 12),
-                                child: _ReservationDetailCard(item: item),
+                            ...detail.items.asMap().entries.map(
+                              (entry) => FadeInUp(
+                                duration: const Duration(milliseconds: 400),
+                                delay: Duration(milliseconds: 50 * entry.key),
+                                child: Padding(
+                                  padding: const EdgeInsets.only(bottom: 12),
+                                  child: _ReservationDetailCard(
+                                    item: entry.value,
+                                  ),
+                                ),
                               ),
                             ),
                         ],
