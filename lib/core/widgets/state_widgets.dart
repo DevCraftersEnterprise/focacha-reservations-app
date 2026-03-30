@@ -17,11 +17,13 @@ class LoadingCard extends StatelessWidget {
     return BaseCard(
       child: Column(
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           const CircularProgressIndicator(),
           const SizedBox(height: 16),
           Text(
             message,
+            textAlign: TextAlign.center,
             style: Theme.of(
               context,
             ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
@@ -43,6 +45,7 @@ class ErrorCard extends StatelessWidget {
     return BaseCard(
       child: Column(
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Icon(Icons.error_outline, size: 48, color: AppColors.errorText),
           const SizedBox(height: 16),
@@ -83,6 +86,7 @@ class EmptyStateCard extends StatelessWidget {
       padding: const EdgeInsets.all(40),
       child: Column(
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Icon(
             icon,

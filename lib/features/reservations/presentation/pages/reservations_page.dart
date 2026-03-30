@@ -41,7 +41,7 @@ class ReservationsPage extends ConsumerWidget {
         child: ResponsiveContainer(
           child: reservationsState.when(
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (_, __) => SingleChildScrollView(
+            error: (_, _) => SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
               child: Padding(
                 padding: const EdgeInsets.all(16),

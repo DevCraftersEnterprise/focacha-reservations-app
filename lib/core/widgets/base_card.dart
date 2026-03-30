@@ -26,6 +26,7 @@ class BaseCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      width: double.infinity,
       padding: padding,
       decoration: BoxDecoration(
         color: backgroundColor,
