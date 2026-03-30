@@ -1,4 +1,4 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../reservations/data/models/branch_model.dart';
@@ -6,17 +6,22 @@ import '../../../reservations/data/service/branches_service.dart';
 import '../../data/models/dashboard_models.dart';
 import '../../data/services/dashboard_service.dart';
 
-final dashboardServiceProvider = Provider<DashboardService>((ref) {
+part 'dashboard_provider.g.dart';
+
+@riverpod
+DashboardService dashboardService(DashboardServiceRef ref) {
   final client = ref.read(dioClientProvider);
   return DashboardService(client);
-});
+}
 
-final dashboardBranchesServiceProvider = Provider<BranchesService>((ref) {
+@riverpod
+BranchesService dashboardBranchesService(DashboardBranchesServiceRef ref) {
   final client = ref.read(dioClientProvider);
   return BranchesService(client);
-});
+}
 
-class DashboardSelectedDateNotifier extends Notifier<String> {
+@riverpod
+class DashboardSelectedDateNotifier extends _$DashboardSelectedDateNotifier {
   @override
   String build() {
     return _todayAsString();
@@ -31,12 +36,9 @@ class DashboardSelectedDateNotifier extends Notifier<String> {
   }
 }
 
-final dashboardSelectedDateProvider =
-    NotifierProvider<DashboardSelectedDateNotifier, String>(
-      DashboardSelectedDateNotifier.new,
-    );
-
-class DashboardSelectedBranchIdNotifier extends Notifier<String?> {
+@riverpod
+class DashboardSelectedBranchIdNotifier
+    extends _$DashboardSelectedBranchIdNotifier {
   @override
   String? build() {
     final session = ref.read(authProvider).value;
@@ -63,14 +65,8 @@ class DashboardSelectedBranchIdNotifier extends Notifier<String?> {
   }
 }
 
-final dashboardSelectedBranchIdProvider =
-    NotifierProvider<DashboardSelectedBranchIdNotifier, String?>(
-      DashboardSelectedBranchIdNotifier.new,
-    );
-
-final dashboardBranchesProvider = FutureProvider<List<BranchModel>>((
-  ref,
-) async {
+@riverpod
+Future<List<BranchModel>> dashboardBranches(DashboardBranchesRef ref) async {
   final session = ref.watch(authProvider).value;
 
   if (session?.isCashier == true) {
@@ -96,24 +92,25 @@ final dashboardBranchesProvider = FutureProvider<List<BranchModel>>((
   final branches = await service.findAll();
   final activeBranches = branches.where((branch) => branch.isActive).toList();
 
-  final selectedBranchId = ref.read(dashboardSelectedBranchIdProvider);
+  final selectedBranchId = ref.read(dashboardSelectedBranchIdNotifierProvider);
 
   if (selectedBranchId == null && activeBranches.isNotEmpty) {
     Future.microtask(() {
       ref
-          .read(dashboardSelectedBranchIdProvider.notifier)
+          .read(dashboardSelectedBranchIdNotifierProvider.notifier)
           .updateBranchId(activeBranches.first.id);
     });
   }
 
   return activeBranches;
-});
+}
 
-final dashboardSummaryProvider = FutureProvider<List<DashboardCalendarItem>>((
-  ref,
+@riverpod
+Future<List<DashboardCalendarItem>> dashboardSummary(
+  DashboardSummaryRef ref,
 ) async {
-  final selectedDate = ref.watch(dashboardSelectedDateProvider);
-  final branchId = ref.watch(dashboardSelectedBranchIdProvider);
+  final selectedDate = ref.watch(dashboardSelectedDateNotifierProvider);
+  final branchId = ref.watch(dashboardSelectedBranchIdNotifierProvider);
 
   if (branchId == null || branchId.isEmpty) {
     return [];
@@ -127,13 +124,14 @@ final dashboardSummaryProvider = FutureProvider<List<DashboardCalendarItem>>((
     month: parsed.month,
     year: parsed.year,
   );
-});
+}
 
-final dashboardDayDetailProvider = FutureProvider<DashboardDayDetail?>((
-  ref,
+@riverpod
+Future<DashboardDayDetail?> dashboardDayDetail(
+  DashboardDayDetailRef ref,
 ) async {
-  final selectedDate = ref.watch(dashboardSelectedDateProvider);
-  final branchId = ref.watch(dashboardSelectedBranchIdProvider);
+  final selectedDate = ref.watch(dashboardSelectedDateNotifierProvider);
+  final branchId = ref.watch(dashboardSelectedBranchIdNotifierProvider);
 
   if (branchId == null || branchId.isEmpty) {
     return null;
@@ -142,7 +140,7 @@ final dashboardDayDetailProvider = FutureProvider<DashboardDayDetail?>((
   final service = ref.read(dashboardServiceProvider);
 
   return service.getDayDetail(branchId: branchId, date: selectedDate);
-});
+}
 
 String _todayAsString() {
   final now = DateTime.now();

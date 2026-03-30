@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../core/constants/app_env.dart';
 import '../../../../core/network/dio_client.dart';
@@ -8,24 +8,29 @@ import '../../../../core/storage/secure_storage_service.dart';
 import '../../data/services/auth_service.dart';
 import '../../domain/auth_session.dart';
 
-final secureStorageProvider = Provider<SecureStorageService>((ref) {
+part 'auth_provider.g.dart';
+
+@riverpod
+SecureStorageService secureStorage(SecureStorageRef ref) {
   return SecureStorageService();
-});
+}
 
-final dioClientProvider = Provider<DioClient>((ref) {
+@riverpod
+DioClient dioClient(DioClientRef ref) {
   final storage = ref.read(secureStorageProvider);
-
   return DioClient(baseUrl: AppEnv.apiBaseUrl, storage: storage);
-});
+}
 
-final authServiceProvider = Provider<AuthService>((ref) {
+@riverpod
+AuthService authService(AuthServiceRef ref) {
   final client = ref.read(dioClientProvider);
   return AuthService(client);
-});
+}
 
-class AuthNotifier extends AsyncNotifier<AuthSession?> {
+@riverpod
+class Auth extends _$Auth {
   @override
-  FutureOr<AuthSession?> build() {
+  FutureOr<AuthSession?> build() async {
     return _restoreSession();
   }
 
@@ -82,7 +87,3 @@ class AuthNotifier extends AsyncNotifier<AuthSession?> {
     state = const AsyncData(null);
   }
 }
-
-final authProvider = AsyncNotifierProvider<AuthNotifier, AuthSession?>(
-  AuthNotifier.new,
-);

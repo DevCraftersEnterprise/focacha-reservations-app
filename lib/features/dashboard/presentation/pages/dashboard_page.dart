@@ -14,8 +14,10 @@ class DashboardPage extends ConsumerWidget {
     final session = ref.watch(authProvider).value;
     final user = session?.user;
     final isAdmin = session?.isAdmin == true;
-    final selectedDate = ref.watch(dashboardSelectedDateProvider);
-    final selectedBranchId = ref.watch(dashboardSelectedBranchIdProvider);
+    final selectedDate = ref.watch(dashboardSelectedDateNotifierProvider);
+    final selectedBranchId = ref.watch(
+      dashboardSelectedBranchIdNotifierProvider,
+    );
 
     final branchesState = ref.watch(dashboardBranchesProvider);
     final summaryState = ref.watch(dashboardSummaryProvider);
@@ -122,7 +124,8 @@ class DashboardPage extends ConsumerWidget {
                             onChanged: (value) {
                               ref
                                   .read(
-                                    dashboardSelectedBranchIdProvider.notifier,
+                                    dashboardSelectedBranchIdNotifierProvider
+                                        .notifier,
                                   )
                                   .updateBranchId(value);
                             },
@@ -171,7 +174,10 @@ class DashboardPage extends ConsumerWidget {
                                   '${selected.year.toString().padLeft(4, '0')}-${selected.month.toString().padLeft(2, '0')}-${selected.day.toString().padLeft(2, '0')}';
 
                               ref
-                                  .read(dashboardSelectedDateProvider.notifier)
+                                  .read(
+                                    dashboardSelectedDateNotifierProvider
+                                        .notifier,
+                                  )
                                   .updateDate(value);
                             }
                           },

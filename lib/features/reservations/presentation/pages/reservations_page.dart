@@ -14,7 +14,7 @@ class ReservationsPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final reservationsState = ref.watch(reservationsProvider);
-    final filters = ref.watch(reservationFiltersProvider);
+    final filters = ref.watch(reservationFiltersNotifierProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -79,7 +79,9 @@ class ReservationsPage extends ConsumerWidget {
                             currentDate: filters.reservationDate,
                             onStatusChanged: (value) {
                               ref
-                                  .read(reservationFiltersProvider.notifier)
+                                  .read(
+                                    reservationFiltersNotifierProvider.notifier,
+                                  )
                                   .updateFilters(
                                     ReservationFilters(
                                       branchId: filters.branchId,
@@ -90,7 +92,9 @@ class ReservationsPage extends ConsumerWidget {
                             },
                             onDateChanged: (value) {
                               ref
-                                  .read(reservationFiltersProvider.notifier)
+                                  .read(
+                                    reservationFiltersNotifierProvider.notifier,
+                                  )
                                   .updateFilters(
                                     ReservationFilters(
                                       branchId: filters.branchId,
@@ -101,7 +105,9 @@ class ReservationsPage extends ConsumerWidget {
                             },
                             onClear: () {
                               ref
-                                  .read(reservationFiltersProvider.notifier)
+                                  .read(
+                                    reservationFiltersNotifierProvider.notifier,
+                                  )
                                   .reset();
                             },
                           ),

@@ -1,4 +1,4 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:intl/intl.dart';
 
 import '../../../auth/presentation/providers/auth_provider.dart';
@@ -8,17 +8,22 @@ import '../../data/models/zone_model.dart';
 import '../../data/service/branches_service.dart';
 import '../../data/service/reservations_service.dart';
 
-final reservationsServiceProvider = Provider<ReservationsService>((ref) {
+part 'reservations_provider.g.dart';
+
+@riverpod
+ReservationsService reservationsService(ReservationsServiceRef ref) {
   final client = ref.read(dioClientProvider);
   return ReservationsService(client);
-});
+}
 
-final branchesServiceProvider = Provider<BranchesService>((ref) {
+@riverpod
+BranchesService branchesService(BranchesServiceRef ref) {
   final client = ref.read(dioClientProvider);
   return BranchesService(client);
-});
+}
 
-final branchesProvider = FutureProvider<List<BranchModel>>((ref) async {
+@riverpod
+Future<List<BranchModel>> branches(BranchesRef ref) async {
   final session = ref.read(authProvider).value;
 
   if (session?.isCashier == true) {
@@ -45,7 +50,7 @@ final branchesProvider = FutureProvider<List<BranchModel>>((ref) async {
   final branches = await service.findAll();
 
   return branches.where((branch) => branch.isActive).toList();
-});
+}
 
 class ReservationFilters {
   final String? branchId;
@@ -55,7 +60,8 @@ class ReservationFilters {
   const ReservationFilters({this.branchId, this.reservationDate, this.status});
 }
 
-class ReservationFiltersNotifier extends Notifier<ReservationFilters> {
+@riverpod
+class ReservationFiltersNotifier extends _$ReservationFiltersNotifier {
   @override
   ReservationFilters build() {
     final session = ref.watch(authProvider).value;
@@ -76,20 +82,16 @@ class ReservationFiltersNotifier extends Notifier<ReservationFilters> {
   }
 }
 
-final reservationFiltersProvider =
-    NotifierProvider<ReservationFiltersNotifier, ReservationFilters>(
-      ReservationFiltersNotifier.new,
-    );
-
-class ReservationsNotifier extends AsyncNotifier<List<ReservationModel>> {
+@riverpod
+class Reservations extends _$Reservations {
   @override
   Future<List<ReservationModel>> build() async {
-    ref.watch(reservationFiltersProvider);
+    ref.watch(reservationFiltersNotifierProvider);
     return _load();
   }
 
   Future<List<ReservationModel>> _load() async {
-    final filters = ref.read(reservationFiltersProvider);
+    final filters = ref.read(reservationFiltersNotifierProvider);
     final service = ref.read(reservationsServiceProvider);
 
     final results = await service.findAll(
@@ -176,16 +178,9 @@ class ReservationsNotifier extends AsyncNotifier<List<ReservationModel>> {
   }
 }
 
-final reservationsProvider =
-    AsyncNotifierProvider<ReservationsNotifier, List<ReservationModel>>(
-      ReservationsNotifier.new,
-    );
-
-final branchZonesProvider = FutureProvider.family<List<ZoneModel>, String>((
-  ref,
-  branchId,
-) async {
+@riverpod
+Future<List<ZoneModel>> branchZones(BranchZonesRef ref, String branchId) async {
   final service = ref.read(reservationsServiceProvider);
   final zones = await service.getZonesByBranch(branchId);
   return zones.where((zone) => zone.isActive).toList();
-});
+}
