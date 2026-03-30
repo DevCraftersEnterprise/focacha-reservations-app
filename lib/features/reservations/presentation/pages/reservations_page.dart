@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/constants/app_colors.dart';
-import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../data/models/reservation_model.dart';
 import '../providers/reservations_provider.dart';
 import 'cancel_reservation_dialog.dart';
@@ -15,7 +14,6 @@ class ReservationsPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final reservationsState = ref.watch(reservationsProvider);
-    final session = ref.watch(authProvider).value;
     final filters = ref.watch(reservationFiltersProvider);
 
     return SafeArea(
@@ -40,9 +38,7 @@ class ReservationsPage extends ConsumerWidget {
                       context: context,
                       isScrollControlled: true,
                       backgroundColor: Colors.transparent,
-                      builder: (_) => ReservationFormSheet(
-                        branchId: session?.user.branchId ?? '',
-                      ),
+                      builder: (_) => ReservationFormSheet(),
                     );
                   },
                   icon: const Icon(Icons.add),
@@ -116,7 +112,6 @@ class ReservationsPage extends ConsumerWidget {
                                   isScrollControlled: true,
                                   backgroundColor: Colors.transparent,
                                   builder: (_) => ReservationFormSheet(
-                                    branchId: reservation.branchId,
                                     reservation: reservation,
                                   ),
                                 );

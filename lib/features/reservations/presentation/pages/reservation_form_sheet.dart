@@ -7,13 +7,8 @@ import '../../data/models/reservation_model.dart';
 import '../providers/reservations_provider.dart';
 
 class ReservationFormSheet extends ConsumerStatefulWidget {
-  const ReservationFormSheet({
-    super.key,
-    required this.branchId,
-    this.reservation,
-  });
+  const ReservationFormSheet({super.key, this.reservation});
 
-  final String branchId;
   final ReservationModel? reservation;
 
   @override
@@ -33,6 +28,7 @@ class _ReservationFormSheetState extends ConsumerState<ReservationFormSheet> {
   late final TextEditingController _phoneSecondaryController;
   late final TextEditingController _notesController;
 
+  String? _selectedBranchId;
   String? _selectedZoneId;
   String? _errorMessage;
   bool _saving = false;
@@ -44,6 +40,7 @@ class _ReservationFormSheetState extends ConsumerState<ReservationFormSheet> {
     super.initState();
 
     final reservation = widget.reservation;
+    final session = ref.read(authProvider).value;
 
     _dateController = TextEditingController(
       text: reservation?.reservationDate ?? '',
@@ -75,7 +72,12 @@ class _ReservationFormSheetState extends ConsumerState<ReservationFormSheet> {
 
     _notesController = TextEditingController(text: reservation?.notes ?? '');
 
-    _selectedZoneId = reservation?.zoneId;
+    if (reservation != null) {
+      _selectedBranchId = reservation.branchId;
+      _selectedZoneId = reservation.zoneId;
+    } else {
+      _selectedBranchId = session?.user.branchId;
+    }
   }
 
   @override
@@ -93,6 +95,11 @@ class _ReservationFormSheetState extends ConsumerState<ReservationFormSheet> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
+
+    if (_selectedBranchId == null || _selectedBranchId!.isEmpty) {
+      setState(() => _errorMessage = 'Selecciona una sucursal');
+      return;
+    }
 
     if (_selectedZoneId == null || _selectedZoneId!.isEmpty) {
       setState(() => _errorMessage = 'Selecciona una zona');
@@ -113,7 +120,7 @@ class _ReservationFormSheetState extends ConsumerState<ReservationFormSheet> {
           reservationDate: _dateController.text.trim(),
           reservationTime: _timeController.text.trim(),
           guestCount: int.parse(_guestCountController.text.trim()),
-          branchId: widget.branchId,
+          branchId: _selectedBranchId!,
           zoneId: _selectedZoneId!,
           eventType: _eventTypeController.text.trim(),
           customerName: _customerNameController.text.trim(),
@@ -130,7 +137,7 @@ class _ReservationFormSheetState extends ConsumerState<ReservationFormSheet> {
           reservationDate: _dateController.text.trim(),
           reservationTime: _timeController.text.trim(),
           guestCount: int.parse(_guestCountController.text.trim()),
-          branchId: widget.branchId,
+          branchId: _selectedBranchId!,
           zoneId: _selectedZoneId!,
           eventType: _eventTypeController.text.trim(),
           customerName: _customerNameController.text.trim(),
@@ -162,8 +169,12 @@ class _ReservationFormSheetState extends ConsumerState<ReservationFormSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final zonesState = ref.watch(branchZonesProvider(widget.branchId));
     final session = ref.watch(authProvider).value;
+    final branchesState = ref.watch(branchesProvider);
+
+    final zonesState = _selectedBranchId == null || _selectedBranchId!.isEmpty
+        ? const AsyncValue<List<dynamic>>.data([])
+        : ref.watch(branchZonesProvider(_selectedBranchId!));
 
     return Padding(
       padding: EdgeInsets.only(
@@ -190,11 +201,74 @@ class _ReservationFormSheetState extends ConsumerState<ReservationFormSheet> {
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'Sucursal: ${session?.user.branch?.name ?? 'Sucursal asignada'}',
-                  ),
                   const SizedBox(height: 18),
+
+                  branchesState.when(
+                    loading: () => const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 8),
+                      child: LinearProgressIndicator(),
+                    ),
+                    error: (_, _) =>
+                        const Text('No se pudieron cargar las sucursales'),
+                    data: (branches) {
+                      if (session?.isCashier == true) {
+                        final branchName =
+                            session?.user.branch?.name ??
+                            'Sucursal no asignada';
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Sucursal',
+                              style: Theme.of(context).textTheme.labelLarge,
+                            ),
+                            const SizedBox(height: 8),
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 14,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade100,
+                                borderRadius: BorderRadius.circular(18),
+                                border: Border.all(color: Colors.grey.shade300),
+                              ),
+                              child: Text(branchName),
+                            ),
+                          ],
+                        );
+                      }
+
+                      return DropdownButtonFormField(
+                        initialValue: _selectedBranchId,
+                        decoration: const InputDecoration(
+                          labelText: 'Sucursal',
+                        ),
+                        items: branches
+                            .map(
+                              (branch) => DropdownMenuItem<String>(
+                                value: branch.id,
+                                child: Text(branch.name),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedBranchId = value;
+                            _selectedZoneId = null;
+                          });
+                        },
+                        validator: (value) => (value == null || value.isEmpty)
+                            ? 'Selecciona una sucursal'
+                            : null,
+                      );
+                    },
+                  ),
+
+                  const SizedBox(height: 14),
+
                   TextFormField(
                     controller: _dateController,
                     decoration: const InputDecoration(
@@ -205,7 +279,9 @@ class _ReservationFormSheetState extends ConsumerState<ReservationFormSheet> {
                         ? 'Ingresa la fecha'
                         : null,
                   ),
+
                   const SizedBox(height: 14),
+
                   TextFormField(
                     controller: _timeController,
                     decoration: const InputDecoration(
@@ -216,7 +292,9 @@ class _ReservationFormSheetState extends ConsumerState<ReservationFormSheet> {
                         ? 'Ingresa la hora'
                         : null,
                   ),
+
                   const SizedBox(height: 14),
+
                   TextFormField(
                     controller: _guestCountController,
                     keyboardType: TextInputType.number,
@@ -228,7 +306,9 @@ class _ReservationFormSheetState extends ConsumerState<ReservationFormSheet> {
                       return null;
                     },
                   ),
+
                   const SizedBox(height: 14),
+
                   zonesState.when(
                     loading: () => const Padding(
                       padding: EdgeInsets.symmetric(vertical: 8),
