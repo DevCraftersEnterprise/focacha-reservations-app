@@ -13,8 +13,11 @@ class DashboardPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final session = ref.watch(authProvider).value;
     final user = session?.user;
-
+    final isAdmin = session?.isAdmin == true;
     final selectedDate = ref.watch(dashboardSelectedDateProvider);
+    final selectedBranchId = ref.watch(dashboardSelectedBranchIdProvider);
+
+    final branchesState = ref.watch(dashboardBranchesProvider);
     final summaryState = ref.watch(dashboardSummaryProvider);
     final detailState = ref.watch(dashboardDayDetailProvider);
 
@@ -23,6 +26,7 @@ class DashboardPage extends ConsumerWidget {
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () async {
+            ref.invalidate(dashboardBranchesProvider);
             ref.invalidate(dashboardSummaryProvider);
             ref.invalidate(dashboardDayDetailProvider);
           },
@@ -73,14 +77,57 @@ class DashboardPage extends ConsumerWidget {
                         ),
                         _Badge(
                           icon: Icons.storefront_outlined,
-                          label: user?.branch?.name ?? 'Sin sucursal',
+                          label: user?.branch?.name ?? 'Administrador',
                         ),
                       ],
                     ),
                   ],
                 ),
               ),
+
               const SizedBox(height: 16),
+
+              if (isAdmin)
+                branchesState.when(
+                  loading: () =>
+                      const _LoadingCard(message: 'Cargando sucursales...'),
+                  error: (_, _) => const _ErrorCard(
+                    message: 'No se pudieron cargar las sucursales.',
+                  ),
+                  data: (branches) {
+                    return Container(
+                      padding: const EdgeInsets.all(18),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: AppColors.border),
+                      ),
+                      child: DropdownButtonFormField<String>(
+                        initialValue: selectedBranchId,
+                        decoration: const InputDecoration(
+                          labelText: 'Sucursal',
+                          prefixIcon: Icon(Icons.storefront_outlined),
+                        ),
+                        items: branches
+                            .map(
+                              (branch) => DropdownMenuItem<String>(
+                                value: branch.id,
+                                child: Text(branch.name),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: (value) {
+                          ref
+                              .read(dashboardSelectedBranchIdProvider.notifier)
+                              .updateBranchId(value);
+                        },
+                      ),
+                    );
+                  },
+                ),
+
+              if (isAdmin) const SizedBox(height: 16),
+
               Container(
                 padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
@@ -161,120 +208,131 @@ class DashboardPage extends ConsumerWidget {
                   ],
                 ),
               ),
-              const SizedBox(height: 16),
-              summaryState.when(
-                loading: () => const _SummaryLoading(),
-                error: (_, _) => const _ErrorCard(
-                  message: 'No se pudo cargar el resumen mensual.',
-                ),
-                data: (summary) {
-                  final selectedCount = summary
-                      .where(
-                        (item) => item.date.split('T').first == selectedDate,
-                      )
-                      .fold<int>(0, (sum, item) => sum + item.count);
 
-                  final totalMonth = summary.fold<int>(
-                    0,
-                    (sum, item) => sum + item.count,
-                  );
-
-                  return Row(
-                    children: [
-                      Expanded(
-                        child: _StatCard(
-                          title: 'Del día',
-                          value: selectedCount.toString(),
-                          icon: Icons.today_outlined,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _StatCard(
-                          title: 'Del mes',
-                          value: totalMonth.toString(),
-                          icon: Icons.date_range_outlined,
-                        ),
-                      ),
-                    ],
-                  );
-                },
-              ),
               const SizedBox(height: 16),
-              detailState.when(
-                loading: () => const _DetailLoading(),
-                error: (_, _) => const _ErrorCard(
-                  message: 'No se pudo cargar el detalle del día.',
-                ),
-                data: (detail) {
-                  if (detail == null) {
-                    return const _ErrorCard(
-                      message: 'No hay sucursal asignada para consultar.',
+
+              if (selectedBranchId == null || selectedBranchId.isEmpty)
+                const _ErrorCard(
+                  message:
+                      'Selecciona una sucursal para consultar el dashboard.',
+                )
+              else ...[
+                summaryState.when(
+                  loading: () => const _SummaryLoading(),
+                  error: (_, _) => const _ErrorCard(
+                    message: 'No se pudo cargar el resumen mensual.',
+                  ),
+                  data: (summary) {
+                    final selectedCount = summary
+                        .where(
+                          (item) => item.date.split('T').first == selectedDate,
+                        )
+                        .fold<int>(0, (sum, item) => sum + item.count);
+
+                    final totalMonth = summary.fold<int>(
+                      0,
+                      (sum, item) => sum + item.count,
                     );
-                  }
 
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              'Detalle del día',
-                              style: Theme.of(context).textTheme.titleLarge
-                                  ?.copyWith(
-                                    fontWeight: FontWeight.w800,
-                                    color: AppColors.textPrimary,
-                                  ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _MiniStatCard(
-                              title: 'Total',
-                              value: detail.total.toString(),
-                              bgColor: AppColors.surface,
-                              textColor: AppColors.textPrimary,
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: _MiniStatCard(
-                              title: 'Activas',
-                              value: detail.activeCount.toString(),
-                              bgColor: AppColors.successBg,
-                              textColor: AppColors.successText,
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: _MiniStatCard(
-                              title: 'Canceladas',
-                              value: detail.cancelledCount.toString(),
-                              bgColor: AppColors.errorBg,
-                              textColor: AppColors.errorText,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 14),
-                      if (detail.items.isEmpty)
-                        const _EmptyDetailState()
-                      else
-                        ...detail.items.map(
-                          (item) => Padding(
-                            padding: const EdgeInsets.only(bottom: 12),
-                            child: _ReservationDetailCard(item: item),
+                    return Row(
+                      children: [
+                        Expanded(
+                          child: _StatCard(
+                            title: 'Del día',
+                            value: selectedCount.toString(),
+                            icon: Icons.today_outlined,
                           ),
                         ),
-                    ],
-                  );
-                },
-              ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _StatCard(
+                            title: 'Del mes',
+                            value: totalMonth.toString(),
+                            icon: Icons.date_range_outlined,
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+
+                const SizedBox(height: 16),
+
+                detailState.when(
+                  loading: () => const _DetailLoading(),
+                  error: (_, _) => const _ErrorCard(
+                    message: 'No se pudo cargar el detalle del día.',
+                  ),
+                  data: (detail) {
+                    if (detail == null) {
+                      return const _ErrorCard(
+                        message: 'No se encontró información para la consulta.',
+                      );
+                    }
+
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                'Detalle del día',
+                                style: Theme.of(context).textTheme.titleLarge
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.w800,
+                                      color: AppColors.textPrimary,
+                                    ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _MiniStatCard(
+                                title: 'Total',
+                                value: detail.total.toString(),
+                                bgColor: AppColors.surface,
+                                textColor: AppColors.textPrimary,
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: _MiniStatCard(
+                                title: 'Activas',
+                                value: detail.activeCount.toString(),
+                                bgColor: AppColors.successBg,
+                                textColor: AppColors.successText,
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: _MiniStatCard(
+                                title: 'Canceladas',
+                                value: detail.cancelledCount.toString(),
+                                bgColor: AppColors.errorBg,
+                                textColor: AppColors.errorText,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 14),
+                        if (detail.items.isEmpty)
+                          const _EmptyDetailState()
+                        else
+                          ...detail.items.map(
+                            (item) => Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: _ReservationDetailCard(item: item),
+                            ),
+                          ),
+                      ],
+                    );
+                  },
+                ),
+              ],
             ],
           ),
         ),
@@ -619,6 +677,36 @@ class _EmptyDetailState extends StatelessWidget {
             style: Theme.of(
               context,
             ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LoadingCard extends StatelessWidget {
+  const _LoadingCard({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        children: [
+          const LinearProgressIndicator(),
+          const SizedBox(height: 12),
+          Text(
+            message,
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
           ),
         ],
       ),
