@@ -33,116 +33,139 @@ class ReservationsPage extends ConsumerWidget {
         label: const Text('Nueva'),
       ),
       body: SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 10),
-
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      'Reservaciones',
-                      style: Theme.of(context).textTheme.headlineSmall
-                          ?.copyWith(fontWeight: FontWeight.w800),
-                    ),
-                  ),
-                ],
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 1024),
+            child: reservationsState.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (_, _) => SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: _ErrorState(),
+                ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: _FiltersCard(
-                currentStatus: filters.status,
-                currentDate: filters.reservationDate,
-                onStatusChanged: (value) {
-                  ref
-                      .read(reservationFiltersProvider.notifier)
-                      .updateFilters(
-                        ReservationFilters(
-                          branchId: filters.branchId,
-                          reservationDate: filters.reservationDate,
-                          status: value,
+              data: (items) {
+                return RefreshIndicator(
+                  onRefresh: () =>
+                      ref.read(reservationsProvider.notifier).refreshData(),
+                  child: CustomScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    slivers: [
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 16, 16, 10),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  'Reservaciones',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headlineSmall
+                                      ?.copyWith(fontWeight: FontWeight.w800),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      );
-                },
-                onDateChanged: (value) {
-                  ref
-                      .read(reservationFiltersProvider.notifier)
-                      .updateFilters(
-                        ReservationFilters(
-                          branchId: filters.branchId,
-                          reservationDate: value,
-                          status: filters.status,
-                        ),
-                      );
-                },
-                onClear: () {
-                  ref.read(reservationFiltersProvider.notifier).reset();
-                },
-              ),
-            ),
-            const SizedBox(height: 10),
-            Expanded(
-              child: reservationsState.when(
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (_, _) => _ErrorState(),
-                data: (items) {
-                  if (items.isEmpty) {
-                    return RefreshIndicator(
-                      onRefresh: () =>
-                          ref.read(reservationsProvider.notifier).refreshData(),
-                      child: ListView(
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        padding: const EdgeInsets.fromLTRB(16, 40, 16, 120),
-                        children: [_EmptyState()],
                       ),
-                    );
-                  }
-
-                  return RefreshIndicator(
-                    onRefresh: () =>
-                        ref.read(reservationsProvider.notifier).refreshData(),
-                    child: ListView.separated(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
-                      itemCount: items.length,
-                      separatorBuilder: (_, _) => const SizedBox(height: 12),
-                      itemBuilder: (context, index) {
-                        final reservation = items[index];
-
-                        return _ReservationCard(
-                          reservation: reservation,
-                          onEdit: reservation.status == 'ACTIVE'
-                              ? () async {
-                                  await showModalBottomSheet<void>(
-                                    context: context,
-                                    isScrollControlled: true,
-                                    backgroundColor: Colors.transparent,
-                                    builder: (_) => ReservationFormSheet(
-                                      reservation: reservation,
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: _FiltersCard(
+                            currentStatus: filters.status,
+                            currentDate: filters.reservationDate,
+                            onStatusChanged: (value) {
+                              ref
+                                  .read(reservationFiltersProvider.notifier)
+                                  .updateFilters(
+                                    ReservationFilters(
+                                      branchId: filters.branchId,
+                                      reservationDate: filters.reservationDate,
+                                      status: value,
                                     ),
                                   );
-                                }
-                              : null,
-                          onCancel: reservation.status == 'ACTIVE'
-                              ? () async {
-                                  await showDialog<void>(
-                                    context: context,
-                                    builder: (_) => CancelReservationDialog(
-                                      reservation: reservation,
+                            },
+                            onDateChanged: (value) {
+                              ref
+                                  .read(reservationFiltersProvider.notifier)
+                                  .updateFilters(
+                                    ReservationFilters(
+                                      branchId: filters.branchId,
+                                      reservationDate: value,
+                                      status: filters.status,
                                     ),
                                   );
-                                }
-                              : null,
-                        );
-                      },
-                    ),
-                  );
-                },
-              ),
+                            },
+                            onClear: () {
+                              ref
+                                  .read(reservationFiltersProvider.notifier)
+                                  .reset();
+                            },
+                          ),
+                        ),
+                      ),
+                      const SliverToBoxAdapter(child: SizedBox(height: 10)),
+                      if (items.isEmpty)
+                        SliverFillRemaining(
+                          hasScrollBody: false,
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 40, 16, 120),
+                            child: _EmptyState(),
+                          ),
+                        )
+                      else
+                        SliverPadding(
+                          padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
+                          sliver: SliverList(
+                            delegate: SliverChildBuilderDelegate((
+                              context,
+                              index,
+                            ) {
+                              final reservation = items[index];
+                              return Padding(
+                                padding: EdgeInsets.only(
+                                  bottom: index < items.length - 1 ? 12 : 0,
+                                ),
+                                child: _ReservationCard(
+                                  reservation: reservation,
+                                  onEdit: reservation.status == 'ACTIVE'
+                                      ? () async {
+                                          await showModalBottomSheet<void>(
+                                            context: context,
+                                            isScrollControlled: true,
+                                            backgroundColor: Colors.transparent,
+                                            builder: (_) =>
+                                                ReservationFormSheet(
+                                                  reservation: reservation,
+                                                ),
+                                          );
+                                        }
+                                      : null,
+                                  onCancel: reservation.status == 'ACTIVE'
+                                      ? () async {
+                                          await showDialog<void>(
+                                            context: context,
+                                            builder: (_) =>
+                                                CancelReservationDialog(
+                                                  reservation: reservation,
+                                                ),
+                                          );
+                                        }
+                                      : null,
+                                ),
+                              );
+                            }, childCount: items.length),
+                          ),
+                        ),
+                    ],
+                  ),
+                );
+              },
             ),
-          ],
+          ),
         ),
       ),
     );

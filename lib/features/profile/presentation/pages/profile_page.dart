@@ -15,143 +15,149 @@ class ProfilePage extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-          children: [
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(28),
-                border: Border.all(color: AppColors.border),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.03),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  Container(
-                    height: 78,
-                    width: 78,
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                    child: const Icon(
-                      Icons.person,
-                      size: 40,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  Text(
-                    '${user?.firstName ?? ''} ${user?.lastName ?? ''}'
-                            .trim()
-                            .isEmpty
-                        ? 'Usuario'
-                        : '${user?.firstName ?? ''} ${user?.lastName ?? ''}',
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    user?.email ?? '-',
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    alignment: WrapAlignment.center,
-                    children: [
-                      _Badge(
-                        icon: Icons.shield_outlined,
-                        label: user?.role ?? '-',
-                      ),
-                      _Badge(
-                        icon: Icons.storefront_outlined,
-                        label: user?.branch?.name ?? 'Sin sucursal',
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 720),
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(28),
+                    border: Border.all(color: AppColors.border),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.03),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
                       ),
                     ],
                   ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            _SectionCard(
-              title: 'Información de usuario',
-              icon: Icons.badge_outlined,
-              child: Column(
-                children: [
-                  _ProfileInfoRow(
-                    icon: Icons.person_outline,
-                    label: 'Nombre',
-                    value:
+                  child: Column(
+                    children: [
+                      Container(
+                        height: 78,
+                        width: 78,
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        child: const Icon(
+                          Icons.person,
+                          size: 40,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      Text(
                         '${user?.firstName ?? ''} ${user?.lastName ?? ''}'
-                            .trim()
-                            .isEmpty
-                        ? '-'
-                        : '${user?.firstName ?? ''} ${user?.lastName ?? ''}',
+                                .trim()
+                                .isEmpty
+                            ? 'Usuario'
+                            : '${user?.firstName ?? ''} ${user?.lastName ?? ''}',
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        user?.email ?? '-',
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        alignment: WrapAlignment.center,
+                        children: [
+                          _Badge(
+                            icon: Icons.shield_outlined,
+                            label: user?.role ?? '-',
+                          ),
+                          _Badge(
+                            icon: Icons.storefront_outlined,
+                            label: user?.branch?.name ?? 'Sin sucursal',
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                  _DividerGap(),
-                  _ProfileInfoRow(
-                    icon: Icons.alternate_email,
-                    label: 'Correo',
-                    value: user?.email ?? '-',
+                ),
+                const SizedBox(height: 16),
+                _SectionCard(
+                  title: 'Información de usuario',
+                  icon: Icons.badge_outlined,
+                  child: Column(
+                    children: [
+                      _ProfileInfoRow(
+                        icon: Icons.person_outline,
+                        label: 'Nombre',
+                        value:
+                            '${user?.firstName ?? ''} ${user?.lastName ?? ''}'
+                                .trim()
+                                .isEmpty
+                            ? '-'
+                            : '${user?.firstName ?? ''} ${user?.lastName ?? ''}',
+                      ),
+                      _DividerGap(),
+                      _ProfileInfoRow(
+                        icon: Icons.alternate_email,
+                        label: 'Correo',
+                        value: user?.email ?? '-',
+                      ),
+                      _DividerGap(),
+                      _ProfileInfoRow(
+                        icon: Icons.verified_user_outlined,
+                        label: 'Rol',
+                        value: user?.role ?? '-',
+                      ),
+                      _DividerGap(),
+                      _ProfileInfoRow(
+                        icon: Icons.storefront_outlined,
+                        label: 'Sucursal',
+                        value: user?.branch?.name ?? 'Sin asignar',
+                      ),
+                    ],
                   ),
-                  _DividerGap(),
-                  _ProfileInfoRow(
-                    icon: Icons.verified_user_outlined,
-                    label: 'Rol',
-                    value: user?.role ?? '-',
+                ),
+                const SizedBox(height: 16),
+                _SectionCard(
+                  title: 'Sesión',
+                  icon: Icons.lock_outline,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        'Puedes cerrar tu sesión de forma segura en este dispositivo.',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton.icon(
+                        onPressed: () async {
+                          await ref.read(authProvider.notifier).logout();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                        ),
+                        icon: const Icon(Icons.logout),
+                        label: const Text('Cerrar sesión'),
+                      ),
+                    ],
                   ),
-                  _DividerGap(),
-                  _ProfileInfoRow(
-                    icon: Icons.storefront_outlined,
-                    label: 'Sucursal',
-                    value: user?.branch?.name ?? 'Sin asignar',
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
-            _SectionCard(
-              title: 'Sesión',
-              icon: Icons.lock_outline,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    'Puedes cerrar tu sesión de forma segura en este dispositivo.',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton.icon(
-                    onPressed: () async {
-                      await ref.read(authProvider.notifier).logout();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                    ),
-                    icon: const Icon(Icons.logout),
-                    label: const Text('Cerrar sesión'),
-                  ),
-                ],
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
