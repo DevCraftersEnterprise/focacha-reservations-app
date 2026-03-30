@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/utils/extract_error_message_util.dart';
+import '../../../../core/widgets/custom_loading_overlay.dart';
 import '../providers/auth_provider.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
@@ -21,16 +22,24 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
   bool _obscurePassword = true;
   String? _errorMessage;
+  OverlayEntry? _loadingOverlay;
 
   @override
   void initState() {
     super.initState();
     _emailController = TextEditingController(text: 'admin@restaurant.com');
     _passwordController = TextEditingController(text: 'Admin123*');
+
+    // Precargar el GIF del loader para que aparezca inmediatamente
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      precacheImage(const AssetImage('assets/images/loading.gif'), context);
+    });
   }
 
   @override
   void dispose() {
+    _loadingOverlay?.remove();
+    _loadingOverlay = null;
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -45,13 +54,39 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       _errorMessage = null;
     });
 
+    // Mostrar el overlay de loading
+    final startTime = DateTime.now();
+
+    _loadingOverlay = CustomLoadingOverlay.show(
+      context,
+      message: 'Iniciando sesión...',
+      assetPath: 'assets/images/loading.gif',
+      imageSize: 280.0,
+    );
+
+    // Dar tiempo al overlay para renderizarse completamente
+    await Future.delayed(const Duration(milliseconds: 200));
+
     final notifier = ref.read(authProvider.notifier);
+    const minimumDisplayTime = Duration(
+      milliseconds: 3000,
+    ); // 3 segundos mínimo
 
     try {
+      // Ejecutar el login
       await notifier.login(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
+
+      // Calcular cuánto tiempo ha pasado
+      final elapsed = DateTime.now().difference(startTime);
+
+      // Si no han pasado los 3 segundos mínimos, esperar el resto
+      if (elapsed < minimumDisplayTime) {
+        final remaining = minimumDisplayTime - elapsed;
+        await Future.delayed(remaining);
+      }
     } catch (error) {
       setState(() {
         _errorMessage = extractErrorMessage(
@@ -59,6 +94,16 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           fallback: 'No se pudo iniciar sesión',
         );
       });
+
+      // También esperar el tiempo mínimo en caso de error
+      final elapsed = DateTime.now().difference(startTime);
+      if (elapsed < minimumDisplayTime) {
+        await Future.delayed(minimumDisplayTime - elapsed);
+      }
+    } finally {
+      // Ocultar el overlay siempre al finalizar
+      _loadingOverlay?.remove();
+      _loadingOverlay = null;
     }
   }
 
